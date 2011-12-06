@@ -1,0 +1,46 @@
+624032 - wireshark segfaults on several pcap files from regression test
+
+Source: upstream, SVN rev. 33704
+
+commit 8c4fa896f5e57bd64e7c6c8628ba53d7ead3e453
+Author: morriss <morriss@f5534014-38df-0310-8fa8-9805f1628bb7>
+Date:   Tue Aug 3 21:28:22 2010 +0000
+
+    Revert rev 33697: it's not necessary (check_col() is NOT necessary in the 1.2
+    trunk after all).
+    
+    Instead, put back the check_col() calls in col_append_fstr() and
+    col_append_sep_fstr().
+    
+    This fixes (the right way) the crash reported in
+    https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=5072 .
+    
+    (This bug has only been there since 1.2.10.)
+    
+    
+    git-svn-id: http://anonsvn.wireshark.org/wireshark/trunk-1.2@33704 f5534014-38df-0310-8fa8-9805f1628bb7
+
+diff --git a/epan/column-utils.c b/epan/column-utils.c
+index 846453b..8766c93 100644
+--- a/epan/column-utils.c
++++ b/epan/column-utils.c
+@@ -367,6 +367,9 @@ col_append_fstr(column_info *cinfo, const gint el, const gchar *format, ...)
+   int  len, max_len;
+   va_list ap;
+ 
++  if (!check_col(cinfo, el))
++    return;
++
+   if (el == COL_INFO)
+     max_len = COL_MAX_INFO_LEN;
+   else
+@@ -401,6 +404,9 @@ col_append_sep_fstr(column_info *cinfo, const gint el, const gchar *separator,
+   int  len, max_len, sep_len;
+   va_list ap;
+ 
++  if (!check_col(cinfo, el))
++    return;
++
+   if (separator == NULL)
+     separator = ", ";    /* default */
+ 
