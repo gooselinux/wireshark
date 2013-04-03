@@ -1,0 +1,53 @@
+666897 - Wireshark: Array index error in ENTTEC dissector
+
+commit 66966b531c0aff764644989a5bcda2b6ce46b51f
+Author: gerald <gerald@f5534014-38df-0310-8fa8-9805f1628bb7>
+Date:   Fri Dec 31 22:24:06 2010 +0000
+
+    From FRAsse via bug 5539:
+    
+    There's a buffer overflow in ENTTEC DMX Data RLE, leading to crashes and
+    potential code execution.
+    
+    From me: ep_allocate our buffers.
+    
+    
+    git-svn-id: http://anonsvn.wireshark.org/wireshark/trunk@35318 f5534014-38df-0310-8fa8-9805f1628bb7
+
+diff --git a/epan/dissectors/packet-enttec.c b/epan/dissectors/packet-enttec.c
+index 6e6cccc..66d3e18 100644
+--- a/epan/dissectors/packet-enttec.c
++++ b/epan/dissectors/packet-enttec.c
+@@ -193,8 +193,8 @@ dissect_enttec_dmx_data(tvbuff_t *tvb, guint offset, proto_tree *tree)
+ 		"%3u: %s"
+ 	};
+ 
+-	static guint8 dmx_data[512];
+-	static guint16 dmx_data_offset[513]; /* 1 extra for last offset */
++	guint8 *dmx_data = ep_alloc(512 * sizeof(guint8));
++	guint16 *dmx_data_offset = ep_alloc(513 * sizeof(guint16)); /* 1 extra for last offset */
+ 	emem_strbuf_t *dmx_epstr;
+ 
+ 	proto_tree *hi,*si;
+@@ -225,10 +225,10 @@ dissect_enttec_dmx_data(tvbuff_t *tvb, guint offset, proto_tree *tree)
+ 		length = 512;
+ 
+ 	if (type == ENTTEC_DATA_TYPE_RLE) {
+-		/* uncompres the DMX data */
++		/* uncompress the DMX data */
+ 		ui = 0;
+ 		ci = 0;
+-		while (ci < length) {
++		while (ci < length && ui < 512) {
+ 			v = tvb_get_guint8(tvb, offset+ci);
+ 			if (v == 0xFE) {
+ 				ci++;
+@@ -236,7 +236,7 @@ dissect_enttec_dmx_data(tvbuff_t *tvb, guint offset, proto_tree *tree)
+ 				ci++;
+ 				v = tvb_get_guint8(tvb, offset+ci);
+ 				ci++;
+-				for (i=0;i < count;i++) {
++				for (i=0;i < count && ui < 512;i++) {
+ 					dmx_data[ui] = v;
+ 					dmx_data_offset[ui] = ci-3;
+ 					ui++;
