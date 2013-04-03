@@ -13,11 +13,11 @@
 
 Summary: 	Network traffic analyzer
 Name: 		wireshark
-Version:	1.2.13
+Version:	1.2.15
 %if %{svn_version}
 Release: 	0.%{svn_version}%{?dist}
 %else
-Release: 	1%{?dist}.2
+Release: 	1%{?dist}.1
 %endif
 License: 	GPL+
 Group: 		Applications/Internet
@@ -39,7 +39,6 @@ Patch7:		wireshark-1.2.8-disable_warning_dialog.patch
 Patch8:		wireshark-1.2.6-nfs40-backchnl-decode.patch
 Patch9:		wireshark-1.2.6-smb-find-full-dir-info.patch
 Patch10:	wireshark-libtool-pie.patch
-Patch11:	wireshark-1.4.2-enttec-overflow.patch
 
 Url: 		http://www.wireshark.org/
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -125,7 +124,6 @@ and plugins.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
-%patch11 -p1 -b .enttec-overflow
 
 %build
 %ifarch s390 s390x sparcv9 sparc64
@@ -323,9 +321,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_sbindir}/idl2wrs
 
 %changelog
+* Tue Mar  8 2011 Jan Safranek <jsafrane@redhat.com> 1.2.15-1
+- upgrade to 1.2.15
+- see http://www.wireshark.org/docs/relnotes/wireshark-1.2.14.html
+- see http://www.wireshark.org/docs/relnotes/wireshark-1.2.15.html
+- Resolves: CVE-2011-0444 CVE-2011-0538 CVE-2011-0713 CVE-2011-1139
+  CVE-2011-1140 CVE-2011-1141 CVE-2011-1143
+
 * Wed Jan  5 2011 Jan Safranek <jsafrane@redhat.com> 1.2.13-1.1
 - fix buffer overflow in ENTTEC dissector
-- Resolves: #667337"
+- Resolves: #667337
 
 * Fri Nov 26 2010 Jan Safranek <jsafrane@redhat.com> 1.2.13-1
 - upgrade to 1.2.13
